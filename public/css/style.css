@@ -153,13 +153,16 @@ button:disabled {
 .warning-text {
     text-align: center;
     color: #e74c3c;
-    font-size: 1em;
-    margin: -20px 0 25px 0;
-    padding: 10px;
+    font-size: 1.1em;
+    margin: -15px auto 25px auto;
+    padding: 15px 20px;
     background-color: rgba(231, 76, 60, 0.1);
-    border-radius: 5px;
+    border-radius: 8px;
     font-weight: 500;
-    line-height: 1.4;
+    line-height: 1.5;
+    max-width: 80%;
+    border: 1px solid rgba(231, 76, 60, 0.2);
+    box-shadow: 0 2px 4px rgba(231, 76, 60, 0.05);
 }
 
 @media (max-width: 600px) {
@@ -176,5 +179,12 @@ button:disabled {
     button {
         padding: 12px 30px;
         font-size: 1em;
+    }
+
+    .warning-text {
+        max-width: 95%;
+        font-size: 1em;
+        margin: -10px auto 20px auto;
+        padding: 12px 15px;
     }
 } 
