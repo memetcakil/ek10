@@ -58,6 +58,15 @@ app.post('/api/upload', (req, res) => {
             });
         }
 
+        // Dosya tipi kontrolü
+        if (!req.file.mimetype.includes('spreadsheet') && 
+            !req.file.mimetype.includes('excel')) {
+            return res.status(400).json({
+                success: false,
+                message: 'Lütfen geçerli bir Excel dosyası seçin.'
+            });
+        }
+
         try {
             const excelBuffer = await transformExcel(req.file.buffer);
             
@@ -67,9 +76,9 @@ app.post('/api/upload', (req, res) => {
 
         } catch (error) {
             console.error('Dönüştürme hatası:', error);
-            return res.status(500).json({
+            return res.status(400).json({
                 success: false,
-                message: 'Dosya dönüştürme sırasında bir hata oluştu: ' + error.message
+                message: error.message
             });
         }
     });

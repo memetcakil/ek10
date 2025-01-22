@@ -2,10 +2,24 @@ const Excel = require('exceljs');
 
 async function transformExcel(fileBuffer) {
     try {
-        // Gelen Excel dosyasını oku
-        const sourceWorkbook = new Excel.Workbook();
-        await sourceWorkbook.xlsx.load(fileBuffer);
-        const sourceSheet = sourceWorkbook.getWorksheet(1);
+        // Buffer kontrolü
+        if (!fileBuffer || fileBuffer.length === 0) {
+            throw new Error('Geçersiz dosya: Boş dosya');
+        }
+
+        // Excel dosyası kontrolü
+        try {
+            // Gelen Excel dosyasını oku
+            const sourceWorkbook = new Excel.Workbook();
+            await sourceWorkbook.xlsx.load(fileBuffer);
+            const sourceSheet = sourceWorkbook.getWorksheet(1);
+
+            if (!sourceSheet) {
+                throw new Error('Excel dosyası boş veya geçersiz');
+            }
+        } catch (error) {
+            throw new Error('Geçersiz Excel dosyası: ' + error.message);
+        }
 
         // Yeni workbook oluştur
         const newWorkbook = new Excel.Workbook();
@@ -88,11 +102,15 @@ async function transformExcel(fileBuffer) {
         // (Devam edecek...)
 
         // Buffer olarak döndür
-        return await newWorkbook.xlsx.writeBuffer();
+        try {
+            return await newWorkbook.xlsx.writeBuffer();
+        } catch (error) {
+            throw new Error('Excel dosyası oluşturulurken hata: ' + error.message);
+        }
 
     } catch (error) {
         console.error('Detaylı hata:', error);
-        throw new Error('Excel dönüştürme hatası: ' + error.message);
+        throw new Error(error.message);
     }
 }
 

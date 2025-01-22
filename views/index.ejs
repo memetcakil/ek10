@@ -28,8 +28,12 @@
         <h1>Excel Dönüştürücü</h1>
         <form action="/api/upload" method="post" enctype="multipart/form-data">
             <div>
-                <input type="file" name="excelFile" accept=".xlsx, .xls" required>
+                <input type="file" 
+                       name="excelFile" 
+                       accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" 
+                       required>
             </div>
+            <small>Sadece Excel dosyaları (.xlsx, .xls) kabul edilir</small>
             <button type="submit">Dönüştür</button>
         </form>
     </div>
