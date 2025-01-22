@@ -105,6 +105,18 @@ async function transformExcel(fileBuffer) {
             size: 11
         };
 
+        // C5'ten L5'e kadar birleştir
+        newWorksheet.mergeCells('C5:L5');
+        const kursAdiValueCell = newWorksheet.getCell('C5');
+        kursAdiValueCell.alignment = {
+            vertical: 'middle',
+            horizontal: 'left',
+            indent: 1
+        };
+        kursAdiValueCell.font = {
+            size: 11
+        };
+
         // A6 ve B6'yı birleştir ve KURSU NO yaz
         newWorksheet.mergeCells('A6:B6');
         const kursNoCell = newWorksheet.getCell('A6');
@@ -115,6 +127,18 @@ async function transformExcel(fileBuffer) {
         };
         kursNoCell.font = {
             bold: true,
+            size: 11
+        };
+
+        // C6'dan L6'ya kadar birleştir
+        newWorksheet.mergeCells('C6:L6');
+        const kursNoValueCell = newWorksheet.getCell('C6');
+        kursNoValueCell.alignment = {
+            vertical: 'middle',
+            horizontal: 'left',
+            indent: 1
+        };
+        kursNoValueCell.font = {
             size: 11
         };
 
