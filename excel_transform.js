@@ -316,4 +316,144 @@ async function transformExcel(fileBuffer) {
 
         // X11'den X50'ye kadar formülleri ekle
         for (let row = 11; row <= 50; row++) {
-            const formulaCell = newWorksheet.getCell(`
+            const formulaCell = newWorksheet.getCell(`X${row}`);
+            formulaCell.value = {
+                formula: `=IF(COUNTIF(C${row}:W${row},"<>")=0,"Not Gir",ROUND(AVERAGE(C${row}:W${row}),1))`,
+                date1904: false
+            };
+            formulaCell.alignment = {
+                vertical: 'middle',
+                horizontal: 'center'
+            };
+            formulaCell.numFmt = '0.0';
+
+            // Y sütununa başarı durumu formülünü ekle
+            const basariDurumuCell = newWorksheet.getCell(`Y${row}`);
+            basariDurumuCell.value = {
+                formula: `=IF(COUNTIF(C${row}:W${row},"<>")=0,"Not Gir",IF(COUNTIF(C${row}:W${row},"<50")<>0,"Başarısız","Başarılı"))`,
+                date1904: false
+            };
+            basariDurumuCell.alignment = {
+                vertical: 'middle',
+                horizontal: 'center'
+            };
+        }
+
+        // Modül adlarını topla
+        const moduleNames = new Set();
+        for (let i = 1; i < sourceData.length; i++) {
+            const row = sourceData[i];
+            if (row && row[1]) { // Modül adı varsa
+                moduleNames.add(row[1]);
+            }
+        }
+
+        // C10'dan başlayarak modül adlarını dikey yaz
+        let moduleIndex = 0;
+        for (const moduleName of moduleNames) {
+            if (moduleIndex >= 21) break; // Maksimum 21 modül
+
+            const col = String.fromCharCode(67 + moduleIndex); // C'den başla
+            const cell = newWorksheet.getCell(`${col}10`);
+            cell.value = moduleName;
+            cell.alignment = {
+                textRotation: 90, // Dikey yazı
+                vertical: 'middle',
+                horizontal: 'center'
+            };
+            cell.font = {
+                bold: true,
+                size: 11
+            };
+            moduleIndex++;
+        }
+
+        // Başlık satırı yüksekliğini ayarla
+        newWorksheet.getRow(10).height = 150;
+
+        // A1'den Y50'ye kadar olan tüm hücrelere kenar çizgisi ekle
+        for (let row = 1; row <= 50; row++) {
+            for (let col = 'A'; col <= 'Y'; col = String.fromCharCode(col.charCodeAt(0) + 1)) {
+                const cell = newWorksheet.getCell(`${col}${row}`);
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                };
+            }
+        }
+
+        // Verileri işle
+        try {
+            let currentStudent = null;
+            let studentGrades = new Map();
+            let rowIndex = 11;
+
+            // Kaynak dosyadan verileri oku
+            for (let i = 1; i < sourceData.length; i++) {
+                const row = sourceData[i];
+                if (!row || row.length < 2) continue;
+
+                // Yeni öğrenci başlangıcı
+                if (row[0]) {
+                    // Önceki öğrencinin verilerini yaz
+                    if (currentStudent) {
+                        const wsRow = newWorksheet.getRow(rowIndex);
+                        wsRow.getCell(1).value = rowIndex - 10;
+                        wsRow.getCell(2).value = currentStudent;
+
+                        // Notları yaz
+                        studentGrades.forEach((grade, moduleIndex) => {
+                            const col = String.fromCharCode(67 + moduleIndex);
+                            wsRow.getCell(col).value = grade;
+                        });
+
+                        rowIndex++;
+                    }
+
+                    // Yeni öğrenci için hazırlık
+                    currentStudent = row[0];
+                    studentGrades = new Map();
+                }
+
+                // Not bilgisini ekle
+                if (row[1] && row[3]) {
+                    const moduleIndex = Array.from(studentGrades.keys()).length;
+                    if (moduleIndex < 21) {
+                        studentGrades.set(moduleIndex, row[3]);
+                    }
+                }
+            }
+
+            // Son öğrencinin verilerini yaz
+            if (currentStudent) {
+                const wsRow = newWorksheet.getRow(rowIndex);
+                wsRow.getCell(1).value = rowIndex - 10;
+                wsRow.getCell(2).value = currentStudent;
+
+                studentGrades.forEach((grade, moduleIndex) => {
+                    const col = String.fromCharCode(67 + moduleIndex);
+                    wsRow.getCell(col).value = grade;
+                });
+            }
+
+        } catch (error) {
+            console.error('Veri işleme hatası:', error);
+            throw new Error('Veri işleme hatası: ' + error.message);
+        }
+
+        // Buffer olarak döndür
+        try {
+            return await newWorkbook.xlsx.writeBuffer();
+        } catch (error) {
+            throw new Error('Excel dosyası oluşturulurken hata: ' + error.message);
+        }
+
+    } catch (error) {
+        console.error('Detaylı hata:', error);
+        throw new Error(error.message);
+    }
+}
+
+module.exports = transformExcel;
