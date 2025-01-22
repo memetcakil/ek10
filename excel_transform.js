@@ -455,6 +455,72 @@ async function transformExcel(fileBuffer) {
             throw new Error('Veri işleme hatası: ' + error.message);
         }
 
+        // A55'ten Y55'e kadar birleştir ve açıklama metnini yaz
+        newWorksheet.mergeCells('A55:Y55');
+        const aciklamaCell = newWorksheet.getCell('A55');
+        aciklamaCell.value = 'İş bu modül değerlendirme çizelgesi kayıtlarımıza uygun olarak düzenlenmiş, bilgilerin doğru ve eksiksiz olduğu imza altına alınmıştır.';
+        aciklamaCell.alignment = {
+            vertical: 'middle',
+            horizontal: 'center'
+        };
+        aciklamaCell.font = {
+            size: 11
+        };
+
+        // İmza alanları için hücre birleştirmeleri
+        // Kurs Öğretmeni
+        newWorksheet.mergeCells('A57:D57');
+        const ogretmenCell = newWorksheet.getCell('A57');
+        ogretmenCell.value = 'Murat BİLGİN';
+        ogretmenCell.alignment = {
+            horizontal: 'center'
+        };
+
+        newWorksheet.mergeCells('A58:D58');
+        const ogretmenUnvanCell = newWorksheet.getCell('A58');
+        ogretmenUnvanCell.value = 'Kurs Öğretmeni';
+        ogretmenUnvanCell.alignment = {
+            horizontal: 'center'
+        };
+
+        // Müdür Yardımcısı
+        newWorksheet.mergeCells('H57:P57');
+        const mudurYardCell = newWorksheet.getCell('H57');
+        mudurYardCell.value = 'Murat BİLGİN';
+        mudurYardCell.alignment = {
+            horizontal: 'center'
+        };
+
+        newWorksheet.mergeCells('H58:P58');
+        const mudurYardUnvanCell = newWorksheet.getCell('H58');
+        mudurYardUnvanCell.value = 'Müdür Yardımcısı';
+        mudurYardUnvanCell.alignment = {
+            horizontal: 'center'
+        };
+
+        // Halk Eğitimi Merkezi Müdürü
+        newWorksheet.mergeCells('R57:Y57');
+        const mudurCell = newWorksheet.getCell('R57');
+        mudurCell.value = 'Fahri DOĞAN';
+        mudurCell.alignment = {
+            horizontal: 'center'
+        };
+
+        newWorksheet.mergeCells('R58:Y58');
+        const mudurUnvanCell = newWorksheet.getCell('R58');
+        mudurUnvanCell.value = 'Halk Eğitimi Merkezi Müdürü';
+        mudurUnvanCell.alignment = {
+            horizontal: 'center'
+        };
+
+        // İmza alanlarının fontunu ayarla
+        ['A57:Y58'].forEach(range => {
+            newWorksheet.getCell(range).font = {
+                bold: true,
+                size: 11
+            };
+        });
+
         // Buffer olarak döndür
         try {
             return await newWorkbook.xlsx.writeBuffer();
