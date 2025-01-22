@@ -8,11 +8,12 @@ async function transformExcel(fileBuffer) {
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-        // B sütunundaki benzersiz modül adlarını al
-        const moduleNames = [...new Set(rawData
-            .slice(2)
-            .map(row => row[1])
-            .filter(Boolean))];
+        // Veriyi işle
+        const data = XLSX.utils.sheet_to_json(sheet, { header: ['name', 'module', 'status', 'grade'] });
+
+        // Benzersiz isimleri ve modülleri al
+        const uniqueNames = [...new Set(data.map(row => row.name))];
+        const uniqueModules = [...new Set(data.map(row => row.module))];
 
         // ExcelJS ile yeni workbook oluştur
         const newWorkbook = new Excel.Workbook();
@@ -22,26 +23,12 @@ async function transformExcel(fileBuffer) {
         newWorksheet.columns = [
             { header: '', width: 5 },  // A sütunu (sıra no için)
             { header: '', width: 30 },   // B sütunu (isimler için)
-            ...moduleNames.map(() => ({ width: 4 })), // Modül sütunları
+            ...uniqueModules.map(() => ({ width: 4 })), // Modül sütunları
             { width: 4 }, // Kalan sütunlar için de 4 birim genişlik
             { width: 4 },
             { width: 4 },
             { width: 4 }
         ];
-
-        // Excel dosyasını oku
-        const workbookOriginal = XLSX.readFile('input.xlsx');
-        const sheetOriginal = workbookOriginal.Sheets[workbookOriginal.SheetNames[0]];
-
-        // Veriyi JSON formatına çevir
-        const data = XLSX.utils.sheet_to_json(sheetOriginal, { header: ['name', 'module', 'status', 'grade'] });
-
-        // Benzersiz isimleri ve modülleri al
-        const uniqueNames = [...new Set(data.map(row => row.name))];
-        const uniqueModules = [...new Set(data.map(row => row.module))];
-
-        // Yeni veri yapısı oluştur
-        const transformedData = [];
 
         // Header row - ilk satıra boş hücre ve modül isimlerini ekle
         const headerRow = [''];
@@ -67,9 +54,6 @@ async function transformExcel(fileBuffer) {
         // Yeni bir workbook oluştur ve worksheet'i ekle
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Transformed Data');
-
-        // Yeni Excel dosyasını kaydet
-        XLSX.writeFile(wb, 'output.xlsx');
 
         // Buffer olarak döndür
         return await newWorkbook.xlsx.writeBuffer();
