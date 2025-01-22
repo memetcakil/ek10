@@ -84,6 +84,167 @@ async function transformExcel(fileBuffer) {
             size: 11
         };
 
+        // A5 ve B5'i birleştir ve KURSUN ADI yaz
+        newWorksheet.mergeCells('A5:B5');
+        const kursAdiCell = newWorksheet.getCell('A5');
+        kursAdiCell.value = 'KURSUN ADI';
+        kursAdiCell.alignment = {
+            vertical: 'middle',
+            horizontal: 'center'
+        };
+        kursAdiCell.font = {
+            bold: true,
+            size: 11
+        };
+
+        // A6 ve B6'yı birleştir ve KURSU NO yaz
+        newWorksheet.mergeCells('A6:B6');
+        const kursNoCell = newWorksheet.getCell('A6');
+        kursNoCell.value = 'KURSU NO';
+        kursNoCell.alignment = {
+            vertical: 'middle',
+            horizontal: 'center'
+        };
+        kursNoCell.font = {
+            bold: true,
+            size: 11
+        };
+
+        // A7 ve B7'yi birleştir ve DÜZENLENDİĞİ YER yaz
+        newWorksheet.mergeCells('A7:B7');
+        const yerCell = newWorksheet.getCell('A7');
+        yerCell.value = 'DÜZENLENDİĞİ YER';
+        yerCell.alignment = {
+            vertical: 'middle',
+            horizontal: 'center'
+        };
+        yerCell.font = {
+            bold: true,
+            size: 11
+        };
+
+        // B8'den W8'e kadar birleştir ve KURS MODÜL DEĞERLENDİRME NOTU yaz
+        newWorksheet.mergeCells('B8:W8');
+        const modulDegerlendirmeCell = newWorksheet.getCell('B8');
+        modulDegerlendirmeCell.value = 'KURS MODÜL DEĞERLENDİRME NOTU';
+        modulDegerlendirmeCell.alignment = {
+            vertical: 'middle',
+            horizontal: 'center'
+        };
+        modulDegerlendirmeCell.font = {
+            bold: true,
+            size: 14,
+            underline: true
+        };
+        modulDegerlendirmeCell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFEEEEEE' }
+        };
+
+        // X8'den Y9'a kadar birleştir ve KURSUN BAŞARI PUANI VE DURUMU yaz
+        newWorksheet.mergeCells('X8:Y9');
+        const basariPuaniCell = newWorksheet.getCell('X8');
+        basariPuaniCell.value = 'KURSUN BAŞARI PUANI VE DURUMU';
+        basariPuaniCell.alignment = {
+            vertical: 'middle',
+            horizontal: 'center',
+            wrapText: true
+        };
+        basariPuaniCell.font = {
+            bold: true,
+            size: 11
+        };
+
+        // C9'dan W9'a kadar sayıları yaz
+        for (let i = 0; i < 21; i++) {
+            const col = String.fromCharCode(67 + i); // 67 = 'C'
+            const cell = newWorksheet.getCell(`${col}9`);
+            cell.value = i + 1;
+            cell.alignment = {
+                vertical: 'middle',
+                horizontal: 'center'
+            };
+            cell.font = {
+                bold: true,
+                size: 11
+            };
+        }
+
+        // A10 ve B10'daki yazıları alt çizgiye hizala
+        const noCell = newWorksheet.getCell('A10');
+        noCell.value = 'No';
+        noCell.alignment = {
+            vertical: 'bottom',
+            horizontal: 'center'
+        };
+        noCell.font = {
+            bold: true,
+            size: 11
+        };
+
+        const adSoyadCell = newWorksheet.getCell('B10');
+        adSoyadCell.value = 'AD SOYAD';
+        adSoyadCell.alignment = {
+            vertical: 'bottom',
+            horizontal: 'center'
+        };
+        adSoyadCell.font = {
+            bold: true,
+            size: 11
+        };
+
+        // X10'a Başarı Puanı yaz (dikey)
+        const basariPuaniBaslikCell = newWorksheet.getCell('X10');
+        basariPuaniBaslikCell.value = 'Başarı Puanı';
+        basariPuaniBaslikCell.alignment = {
+            textRotation: 90,
+            vertical: 'middle',
+            horizontal: 'center'
+        };
+        basariPuaniBaslikCell.font = {
+            bold: true,
+            size: 11
+        };
+
+        // Y10'a Başarı Durumu yaz (dikey)
+        const basariDurumuBaslikCell = newWorksheet.getCell('Y10');
+        basariDurumuBaslikCell.value = 'Başarı Durumu';
+        basariDurumuBaslikCell.alignment = {
+            textRotation: 90,
+            vertical: 'middle',
+            horizontal: 'center'
+        };
+        basariDurumuBaslikCell.font = {
+            bold: true,
+            size: 11
+        };
+
+        // X11'den X50'ye kadar formülleri ekle
+        for (let row = 11; row <= 50; row++) {
+            const formulaCell = newWorksheet.getCell(`X${row}`);
+            formulaCell.value = {
+                formula: `=IF(COUNTIF(C${row}:W${row},"<>")=0,"Not Gir",ROUND(AVERAGE(C${row}:W${row}),1))`,
+                date1904: false
+            };
+            formulaCell.alignment = {
+                vertical: 'middle',
+                horizontal: 'center'
+            };
+            formulaCell.numFmt = '0.0';
+
+            // Y sütununa başarı durumu formülünü ekle
+            const basariDurumuCell = newWorksheet.getCell(`Y${row}`);
+            basariDurumuCell.value = {
+                formula: `=IF(COUNTIF(C${row}:W${row},"<>")=0,"Not Gir",IF(COUNTIF(C${row}:W${row},"<50")<>0,"Başarısız","Başarılı"))`,
+                date1904: false
+            };
+            basariDurumuCell.alignment = {
+                vertical: 'middle',
+                horizontal: 'center'
+            };
+        }
+
         // Kaynak Excel'i okumayı en sona al
         try {
             // Gelen Excel dosyasını oku
