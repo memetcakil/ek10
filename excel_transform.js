@@ -247,51 +247,62 @@ async function transformExcel(fileBuffer) {
 
         // Kaynak Excel'i okumayı en sona al
         try {
+            console.log('Excel okuma başlıyor...');
+            
             // Gelen Excel dosyasını oku
             const sourceWorkbook = new Excel.Workbook();
             await sourceWorkbook.xlsx.load(fileBuffer);
             const sourceSheet = sourceWorkbook.getWorksheet(1);
 
+            console.log('Excel okundu, worksheet:', sourceSheet ? 'bulundu' : 'bulunamadı');
+            
             if (!sourceSheet) {
                 throw new Error('Excel dosyası boş veya geçersiz');
             }
 
+            // Debug için ilk satırları kontrol et
+            sourceSheet.eachRow((row, rowNumber) => {
+                if (rowNumber <= 5) {
+                    console.log(`Satır ${rowNumber}:`, row.values);
+                }
+            });
+
             // Kaynak verilerini işle
             let currentStudent = null;
             let studentGrades = new Map();
-            let rowIndex = 11; // 11. satırdan başla
+            let rowIndex = 11;
 
             // Kaynak dosyadan verileri oku
             sourceSheet.eachRow((row, rowNumber) => {
-                if (rowNumber < 2) return; // Başlık satırını atla
+                if (rowNumber < 2) {
+                    console.log('Başlık satırı atlandı');
+                    return; // Başlık satırını atla
+                }
 
                 const rowData = row.values;
-                if (!rowData || rowData.length < 2) return;
+                console.log(`İşlenen satır ${rowNumber}:`, rowData);
+
+                if (!rowData || rowData.length < 2) {
+                    console.log('Geçersiz satır atlandı');
+                    return;
+                }
 
                 // Yeni öğrenci başlangıcı
                 if (rowData[1]) {
+                    console.log('Yeni öğrenci bulundu:', rowData[1]);
+                    
                     // Önceki öğrencinin verilerini yaz
                     if (currentStudent) {
+                        console.log('Önceki öğrenci yazılıyor:', currentStudent);
                         const wsRow = newWorksheet.getRow(rowIndex);
-                        wsRow.getCell(1).value = rowIndex - 10; // Sıra no
-                        wsRow.getCell(1).alignment = {
-                            vertical: 'middle',
-                            horizontal: 'center'
-                        };
+                        wsRow.getCell(1).value = rowIndex - 10;
                         wsRow.getCell(2).value = currentStudent;
-                        wsRow.getCell(2).alignment = {
-                            vertical: 'middle',
-                            horizontal: 'left'
-                        };
 
                         // Notları yaz
                         studentGrades.forEach((grade, moduleIndex) => {
-                            const col = String.fromCharCode(67 + moduleIndex); // C'den başla
+                            const col = String.fromCharCode(67 + moduleIndex);
+                            console.log(`Not yazılıyor: ${col}${rowIndex} = ${grade}`);
                             wsRow.getCell(col).value = grade;
-                            wsRow.getCell(col).alignment = {
-                                vertical: 'middle',
-                                horizontal: 'center'
-                            };
                         });
 
                         rowIndex++;
@@ -303,42 +314,20 @@ async function transformExcel(fileBuffer) {
                 }
 
                 // Not bilgisini ekle
-                if (rowData[2] && rowData[4]) { // Modül adı ve not varsa
+                if (rowData[2] && rowData[4]) {
                     const moduleIndex = Array.from(studentGrades.keys()).length;
-                    if (moduleIndex < 21) { // Maksimum 21 modül
+                    if (moduleIndex < 21) {
+                        console.log(`Not ekleniyor: ${rowData[2]} = ${rowData[4]}`);
                         studentGrades.set(moduleIndex, rowData[4]);
                     }
                 }
             });
 
-            // Son öğrencinin verilerini yaz
-            if (currentStudent) {
-                const wsRow = newWorksheet.getRow(rowIndex);
-                wsRow.getCell(1).value = rowIndex - 10;
-                wsRow.getCell(1).alignment = {
-                    vertical: 'middle',
-                    horizontal: 'center'
-                };
-                wsRow.getCell(2).value = currentStudent;
-                wsRow.getCell(2).alignment = {
-                    vertical: 'middle',
-                    horizontal: 'left'
-                };
-
-                // Notları yaz
-                studentGrades.forEach((grade, moduleIndex) => {
-                    const col = String.fromCharCode(67 + moduleIndex);
-                    wsRow.getCell(col).value = grade;
-                    wsRow.getCell(col).alignment = {
-                        vertical: 'middle',
-                        horizontal: 'center'
-                    };
-                });
-            }
+            console.log('Veri okuma tamamlandı');
 
         } catch (error) {
-            // Kaynak dosya okunamasa bile yeni şablonu döndür
-            console.warn('Kaynak dosya okunamadı:', error.message);
+            console.error('Excel okuma hatası:', error);
+            throw new Error('Excel dosyası okuma hatası: ' + error.message);
         }
 
         // Buffer olarak döndür
