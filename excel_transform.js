@@ -257,7 +257,84 @@ async function transformExcel(fileBuffer) {
             }
 
             // Kaynak verilerini işle
-            // ... (veri işleme kodları buraya gelecek)
+            let currentStudent = null;
+            let studentGrades = new Map();
+            let rowIndex = 11; // 11. satırdan başla
+
+            // Kaynak dosyadan verileri oku
+            sourceSheet.eachRow((row, rowNumber) => {
+                if (rowNumber < 2) return; // Başlık satırını atla
+
+                const rowData = row.values;
+                if (!rowData || rowData.length < 2) return;
+
+                // Yeni öğrenci başlangıcı
+                if (rowData[1]) {
+                    // Önceki öğrencinin verilerini yaz
+                    if (currentStudent) {
+                        const wsRow = newWorksheet.getRow(rowIndex);
+                        wsRow.getCell(1).value = rowIndex - 10; // Sıra no
+                        wsRow.getCell(1).alignment = {
+                            vertical: 'middle',
+                            horizontal: 'center'
+                        };
+                        wsRow.getCell(2).value = currentStudent;
+                        wsRow.getCell(2).alignment = {
+                            vertical: 'middle',
+                            horizontal: 'left'
+                        };
+
+                        // Notları yaz
+                        studentGrades.forEach((grade, moduleIndex) => {
+                            const col = String.fromCharCode(67 + moduleIndex); // C'den başla
+                            wsRow.getCell(col).value = grade;
+                            wsRow.getCell(col).alignment = {
+                                vertical: 'middle',
+                                horizontal: 'center'
+                            };
+                        });
+
+                        rowIndex++;
+                    }
+
+                    // Yeni öğrenci için hazırlık
+                    currentStudent = rowData[1];
+                    studentGrades = new Map();
+                }
+
+                // Not bilgisini ekle
+                if (rowData[2] && rowData[4]) { // Modül adı ve not varsa
+                    const moduleIndex = Array.from(studentGrades.keys()).length;
+                    if (moduleIndex < 21) { // Maksimum 21 modül
+                        studentGrades.set(moduleIndex, rowData[4]);
+                    }
+                }
+            });
+
+            // Son öğrencinin verilerini yaz
+            if (currentStudent) {
+                const wsRow = newWorksheet.getRow(rowIndex);
+                wsRow.getCell(1).value = rowIndex - 10;
+                wsRow.getCell(1).alignment = {
+                    vertical: 'middle',
+                    horizontal: 'center'
+                };
+                wsRow.getCell(2).value = currentStudent;
+                wsRow.getCell(2).alignment = {
+                    vertical: 'middle',
+                    horizontal: 'left'
+                };
+
+                // Notları yaz
+                studentGrades.forEach((grade, moduleIndex) => {
+                    const col = String.fromCharCode(67 + moduleIndex);
+                    wsRow.getCell(col).value = grade;
+                    wsRow.getCell(col).alignment = {
+                        vertical: 'middle',
+                        horizontal: 'center'
+                    };
+                });
+            }
 
         } catch (error) {
             // Kaynak dosya okunamasa bile yeni şablonu döndür
