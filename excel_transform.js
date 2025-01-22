@@ -205,6 +205,18 @@ async function transformExcel(fileBuffer) {
             size: 11
         };
 
+        // U6'dan Y6'ya kadar birleştir
+        newWorksheet.mergeCells('U6:Y6');
+        const u6Cell = newWorksheet.getCell('U6');
+        u6Cell.alignment = {
+            vertical: 'middle',
+            horizontal: 'left',
+            indent: 1
+        };
+        u6Cell.font = {
+            size: 11
+        };
+
         // B8'den W8'e kadar birleştir ve KURS MODÜL DEĞERLENDİRME NOTU yaz
         newWorksheet.mergeCells('B8:W8');
         const modulDegerlendirmeCell = newWorksheet.getCell('B8');
