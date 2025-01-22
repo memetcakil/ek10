@@ -326,6 +326,19 @@ async function transformExcel(fileBuffer) {
             throw new Error('Veri işleme hatası: ' + error.message);
         }
 
+        // A1'den Y50'ye kadar olan tüm hücrelere kenar çizgisi ekle
+        for (let row = 1; row <= 50; row++) {
+            for (let col = 'A'; col <= 'Y'; col = String.fromCharCode(col.charCodeAt(0) + 1)) {
+                const cell = newWorksheet.getCell(`${col}${row}`);
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                };
+            }
+        }
+
         // Buffer olarak döndür
         return await newWorkbook.xlsx.writeBuffer();
 
