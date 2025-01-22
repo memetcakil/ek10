@@ -17,6 +17,8 @@ body {
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    position: relative;
+    padding-bottom: 60px;
 }
 
 h1 {
@@ -134,6 +136,18 @@ button:disabled {
     text-align: center;
     margin-top: 10px;
     font-size: 0.9em;
+}
+
+.creator-info {
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 0.8em;
+    margin-top: 30px;
+    font-style: italic;
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
 }
 
 @media (max-width: 600px) {
