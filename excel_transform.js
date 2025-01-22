@@ -1,4 +1,5 @@
 const Excel = require('exceljs');
+const XLSX = require('xlsx');
 
 async function transformExcel(fileBuffer) {
     try {
@@ -6,6 +7,13 @@ async function transformExcel(fileBuffer) {
         if (!fileBuffer || fileBuffer.length === 0) {
             throw new Error('Geçersiz dosya: Boş dosya');
         }
+
+        // Önce XLSX ile dosyayı oku
+        console.log('XLSX ile dosya okunuyor...');
+        const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const sourceData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        console.log('XLSX ile veri okundu:', sourceData.length, 'satır');
 
         // Yeni workbook oluştur
         const newWorkbook = new Excel.Workbook();
@@ -245,51 +253,25 @@ async function transformExcel(fileBuffer) {
             };
         }
 
-        // Kaynak Excel'i okumayı en sona al
+        // Verileri işle
         try {
-            console.log('Excel okuma başlıyor...');
-            
-            // Gelen Excel dosyasını oku
-            const sourceWorkbook = new Excel.Workbook();
-            await sourceWorkbook.xlsx.load(fileBuffer);
-            const sourceSheet = sourceWorkbook.getWorksheet(1);
-
-            console.log('Excel okundu, worksheet:', sourceSheet ? 'bulundu' : 'bulunamadı');
-            
-            if (!sourceSheet) {
-                throw new Error('Excel dosyası boş veya geçersiz');
-            }
-
-            // Debug için ilk satırları kontrol et
-            sourceSheet.eachRow((row, rowNumber) => {
-                if (rowNumber <= 5) {
-                    console.log(`Satır ${rowNumber}:`, row.values);
-                }
-            });
-
-            // Kaynak verilerini işle
             let currentStudent = null;
             let studentGrades = new Map();
             let rowIndex = 11;
 
-            // Kaynak dosyadan verileri oku
-            sourceSheet.eachRow((row, rowNumber) => {
-                if (rowNumber < 2) {
-                    console.log('Başlık satırı atlandı');
-                    return; // Başlık satırını atla
-                }
+            // Her bir satırı işle (ilk satırı atla)
+            for (let i = 1; i < sourceData.length; i++) {
+                const row = sourceData[i];
+                console.log(`İşlenen satır ${i}:`, row);
 
-                const rowData = row.values;
-                console.log(`İşlenen satır ${rowNumber}:`, rowData);
-
-                if (!rowData || rowData.length < 2) {
+                if (!row || row.length < 2) {
                     console.log('Geçersiz satır atlandı');
-                    return;
+                    continue;
                 }
 
                 // Yeni öğrenci başlangıcı
-                if (rowData[1]) {
-                    console.log('Yeni öğrenci bulundu:', rowData[1]);
+                if (row[0]) { // İlk sütunda isim varsa
+                    console.log('Yeni öğrenci bulundu:', row[0]);
                     
                     // Önceki öğrencinin verilerini yaz
                     if (currentStudent) {
@@ -309,33 +291,43 @@ async function transformExcel(fileBuffer) {
                     }
 
                     // Yeni öğrenci için hazırlık
-                    currentStudent = rowData[1];
+                    currentStudent = row[0];
                     studentGrades = new Map();
                 }
 
                 // Not bilgisini ekle
-                if (rowData[2] && rowData[4]) {
+                if (row[1] && row[3]) { // Modül adı ve not
                     const moduleIndex = Array.from(studentGrades.keys()).length;
                     if (moduleIndex < 21) {
-                        console.log(`Not ekleniyor: ${rowData[2]} = ${rowData[4]}`);
-                        studentGrades.set(moduleIndex, rowData[4]);
+                        console.log(`Not ekleniyor: ${row[1]} = ${row[3]}`);
+                        studentGrades.set(moduleIndex, row[3]);
                     }
                 }
-            });
+            }
 
-            console.log('Veri okuma tamamlandı');
+            // Son öğrencinin verilerini yaz
+            if (currentStudent) {
+                console.log('Son öğrenci yazılıyor:', currentStudent);
+                const wsRow = newWorksheet.getRow(rowIndex);
+                wsRow.getCell(1).value = rowIndex - 10;
+                wsRow.getCell(2).value = currentStudent;
+
+                studentGrades.forEach((grade, moduleIndex) => {
+                    const col = String.fromCharCode(67 + moduleIndex);
+                    console.log(`Not yazılıyor: ${col}${rowIndex} = ${grade}`);
+                    wsRow.getCell(col).value = grade;
+                });
+            }
+
+            console.log('Veri işleme tamamlandı');
 
         } catch (error) {
-            console.error('Excel okuma hatası:', error);
-            throw new Error('Excel dosyası okuma hatası: ' + error.message);
+            console.error('Veri işleme hatası:', error);
+            throw new Error('Veri işleme hatası: ' + error.message);
         }
 
         // Buffer olarak döndür
-        try {
-            return await newWorkbook.xlsx.writeBuffer();
-        } catch (error) {
-            throw new Error('Excel dosyası oluşturulurken hata: ' + error.message);
-        }
+        return await newWorkbook.xlsx.writeBuffer();
 
     } catch (error) {
         console.error('Detaylı hata:', error);
