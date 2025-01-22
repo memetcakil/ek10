@@ -18,6 +18,17 @@ async function transformExcel(fileBuffer) {
         const newWorkbook = new Excel.Workbook();
         const newWorksheet = newWorkbook.addWorksheet('Transformed Data');
 
+        // Sütun genişliklerini ayarla
+        newWorksheet.columns = [
+            { header: '', width: 5 },  // A sütunu (sıra no için)
+            { header: '', width: 30 },   // B sütunu (isimler için)
+            ...moduleNames.map(() => ({ width: 4 })), // Modül sütunları
+            { width: 4 }, // Kalan sütunlar için de 4 birim genişlik
+            { width: 4 },
+            { width: 4 },
+            { width: 4 }
+        ];
+
         // Excel dosyasını oku
         const workbookOriginal = XLSX.readFile('input.xlsx');
         const sheetOriginal = workbookOriginal.Sheets[workbookOriginal.SheetNames[0]];
@@ -61,10 +72,10 @@ async function transformExcel(fileBuffer) {
         XLSX.writeFile(wb, 'output.xlsx');
 
         // Buffer olarak döndür
-        const buffer = await newWorkbook.xlsx.writeBuffer();
-        return buffer;
+        return await newWorkbook.xlsx.writeBuffer();
 
     } catch (error) {
+        console.error('Detaylı hata:', error);
         throw new Error('Excel dönüştürme hatası: ' + error.message);
     }
 }

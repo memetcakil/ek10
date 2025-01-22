@@ -9,7 +9,7 @@
 <body>
     <div class="container">
         <h1>Excel Dönüştürücü</h1>
-        <form id="uploadForm">
+        <form action="/api/upload" method="post" enctype="multipart/form-data">
             <div class="upload-area">
                 <input type="file" id="excelFile" name="excelFile" accept=".xlsx, .xls" required>
                 <label for="excelFile">Excel Dosyası Seç</label>
