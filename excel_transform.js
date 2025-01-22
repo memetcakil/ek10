@@ -155,6 +155,44 @@ async function transformExcel(fileBuffer) {
             size: 11
         };
 
+        // C7'den L7'ye kadar birleştir
+        newWorksheet.mergeCells('C7:L7');
+        const yerValueCell = newWorksheet.getCell('C7');
+        yerValueCell.alignment = {
+            vertical: 'middle',
+            horizontal: 'left',
+            indent: 1
+        };
+        yerValueCell.font = {
+            size: 11
+        };
+
+        // M5'ten T5'e kadar birleştir ve BAŞLAMA TARİHİ yaz
+        newWorksheet.mergeCells('M5:T5');
+        const baslamaTarihiCell = newWorksheet.getCell('M5');
+        baslamaTarihiCell.value = 'BAŞLAMA TARİHİ';
+        baslamaTarihiCell.alignment = {
+            vertical: 'middle',
+            horizontal: 'center'
+        };
+        baslamaTarihiCell.font = {
+            bold: true,
+            size: 11
+        };
+
+        // M6'dan T6'ya kadar birleştir ve BİTİŞ TARİHİ yaz
+        newWorksheet.mergeCells('M6:T6');
+        const bitisTarihiCell = newWorksheet.getCell('M6');
+        bitisTarihiCell.value = 'BİTİŞ TARİHİ';
+        bitisTarihiCell.alignment = {
+            vertical: 'middle',
+            horizontal: 'center'
+        };
+        bitisTarihiCell.font = {
+            bold: true,
+            size: 11
+        };
+
         // B8'den W8'e kadar birleştir ve KURS MODÜL DEĞERLENDİRME NOTU yaz
         newWorksheet.mergeCells('B8:W8');
         const modulDegerlendirmeCell = newWorksheet.getCell('B8');
@@ -254,154 +292,4 @@ async function transformExcel(fileBuffer) {
 
         // X11'den X50'ye kadar formülleri ekle
         for (let row = 11; row <= 50; row++) {
-            const formulaCell = newWorksheet.getCell(`X${row}`);
-            formulaCell.value = {
-                formula: `=IF(COUNTIF(C${row}:W${row},"<>")=0,"Not Gir",ROUND(AVERAGE(C${row}:W${row}),1))`,
-                date1904: false
-            };
-            formulaCell.alignment = {
-                vertical: 'middle',
-                horizontal: 'center'
-            };
-            formulaCell.numFmt = '0.0';
-
-            // Y sütununa başarı durumu formülünü ekle
-            const basariDurumuCell = newWorksheet.getCell(`Y${row}`);
-            basariDurumuCell.value = {
-                formula: `=IF(COUNTIF(C${row}:W${row},"<>")=0,"Not Gir",IF(COUNTIF(C${row}:W${row},"<50")<>0,"Başarısız","Başarılı"))`,
-                date1904: false
-            };
-            basariDurumuCell.alignment = {
-                vertical: 'middle',
-                horizontal: 'center'
-            };
-        }
-
-        // Modül adlarını topla
-        const moduleNames = new Set();
-        for (let i = 1; i < sourceData.length; i++) {
-            const row = sourceData[i];
-            if (row && row[1]) { // Modül adı varsa
-                moduleNames.add(row[1]);
-            }
-        }
-
-        // C10'dan başlayarak modül adlarını dikey yaz
-        let moduleIndex = 0;
-        for (const moduleName of moduleNames) {
-            if (moduleIndex >= 21) break; // Maksimum 21 modül
-
-            const col = String.fromCharCode(67 + moduleIndex); // C'den başla
-            const cell = newWorksheet.getCell(`${col}10`);
-            cell.value = moduleName;
-            cell.alignment = {
-                textRotation: 90, // Dikey yazı
-                vertical: 'middle',
-                horizontal: 'center'
-            };
-            cell.font = {
-                bold: true,
-                size: 11
-            };
-            moduleIndex++;
-        }
-
-        // Başlık satırı yüksekliğini ayarla
-        newWorksheet.getRow(10).height = 150;
-
-        // Verileri işle
-        try {
-            let currentStudent = null;
-            let studentGrades = new Map();
-            let rowIndex = 11;
-
-            // Her bir satırı işle (ilk satırı atla)
-            for (let i = 1; i < sourceData.length; i++) {
-                const row = sourceData[i];
-                console.log(`İşlenen satır ${i}:`, row);
-
-                if (!row || row.length < 2) {
-                    console.log('Geçersiz satır atlandı');
-                    continue;
-                }
-
-                // Yeni öğrenci başlangıcı
-                if (row[0]) { // İlk sütunda isim varsa
-                    console.log('Yeni öğrenci bulundu:', row[0]);
-                    
-                    // Önceki öğrencinin verilerini yaz
-                    if (currentStudent) {
-                        console.log('Önceki öğrenci yazılıyor:', currentStudent);
-                        const wsRow = newWorksheet.getRow(rowIndex);
-                        wsRow.getCell(1).value = rowIndex - 10;
-                        wsRow.getCell(2).value = currentStudent;
-
-                        // Notları yaz
-                        studentGrades.forEach((grade, moduleIndex) => {
-                            const col = String.fromCharCode(67 + moduleIndex);
-                            console.log(`Not yazılıyor: ${col}${rowIndex} = ${grade}`);
-                            wsRow.getCell(col).value = grade;
-                        });
-
-                        rowIndex++;
-                    }
-
-                    // Yeni öğrenci için hazırlık
-                    currentStudent = row[0];
-                    studentGrades = new Map();
-                }
-
-                // Not bilgisini ekle
-                if (row[1] && row[3]) { // Modül adı ve not
-                    const moduleIndex = Array.from(studentGrades.keys()).length;
-                    if (moduleIndex < 21) {
-                        console.log(`Not ekleniyor: ${row[1]} = ${row[3]}`);
-                        studentGrades.set(moduleIndex, row[3]);
-                    }
-                }
-            }
-
-            // Son öğrencinin verilerini yaz
-            if (currentStudent) {
-                console.log('Son öğrenci yazılıyor:', currentStudent);
-                const wsRow = newWorksheet.getRow(rowIndex);
-                wsRow.getCell(1).value = rowIndex - 10;
-                wsRow.getCell(2).value = currentStudent;
-
-                studentGrades.forEach((grade, moduleIndex) => {
-                    const col = String.fromCharCode(67 + moduleIndex);
-                    console.log(`Not yazılıyor: ${col}${rowIndex} = ${grade}`);
-                    wsRow.getCell(col).value = grade;
-                });
-            }
-
-            console.log('Veri işleme tamamlandı');
-
-        } catch (error) {
-            console.error('Veri işleme hatası:', error);
-            throw new Error('Veri işleme hatası: ' + error.message);
-        }
-
-        // A1'den Y50'ye kadar olan tüm hücrelere kenar çizgisi ekle
-        for (let row = 1; row <= 50; row++) {
-            for (let col = 'A'; col <= 'Y'; col = String.fromCharCode(col.charCodeAt(0) + 1)) {
-                const cell = newWorksheet.getCell(`${col}${row}`);
-                cell.border = {
-                    top: { style: 'thin' },
-                    left: { style: 'thin' },
-                    bottom: { style: 'thin' },
-                    right: { style: 'thin' }
-                };
-            }
-        }
-
-        // Buffer olarak döndür
-        return await newWorkbook.xlsx.writeBuffer();
-
-    } catch (error) {
-        console.error('Detaylı hata:', error);
-        throw new Error(error.message);
-    }
-}
-
-module.exports = transformExcel; 
+            const formulaCell = newWorksheet.getCell(`
