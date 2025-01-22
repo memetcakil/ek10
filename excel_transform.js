@@ -24,8 +24,8 @@ async function transformExcel(fileBuffer) {
             { header: '', width: 5 },  // A sütunu (sıra no için)
             { header: '', width: 30 },   // B sütunu (isimler için)
             ...Array(21).fill({ width: 4 }), // C'den W'ye kadar modül sütunları
-            { width: 4 }, // X sütunu (Başarı Puanı)
-            { width: 4 }  // Y sütunu (Başarı Durumu)
+            { width: 8 }, // X sütunu (Başarı Puanı)
+            { width: 8 }  // Y sütunu (Başarı Durumu)
         ];
 
         // A1'den Y1'e kadar hücreleri birleştir ve T.C. yaz
