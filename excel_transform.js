@@ -167,6 +167,18 @@ async function transformExcel(fileBuffer) {
             size: 11
         };
 
+        // M7'den Y7'ye kadar birleştir
+        newWorksheet.mergeCells('M7:Y7');
+        const m7Cell = newWorksheet.getCell('M7');
+        m7Cell.alignment = {
+            vertical: 'middle',
+            horizontal: 'left',
+            indent: 1
+        };
+        m7Cell.font = {
+            size: 11
+        };
+
         // M5'ten T5'e kadar birleştir ve BAŞLAMA TARİHİ yaz
         newWorksheet.mergeCells('M5:T5');
         const baslamaTarihiCell = newWorksheet.getCell('M5');
