@@ -180,6 +180,18 @@ async function transformExcel(fileBuffer) {
             size: 11
         };
 
+        // U5'ten Y5'e kadar birleştir
+        newWorksheet.mergeCells('U5:Y5');
+        const u5Cell = newWorksheet.getCell('U5');
+        u5Cell.alignment = {
+            vertical: 'middle',
+            horizontal: 'left',
+            indent: 1
+        };
+        u5Cell.font = {
+            size: 11
+        };
+
         // M6'dan T6'ya kadar birleştir ve BİTİŞ TARİHİ yaz
         newWorksheet.mergeCells('M6:T6');
         const bitisTarihiCell = newWorksheet.getCell('M6');
