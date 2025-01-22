@@ -4,26 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Excel Dönüştürücü</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            text-align: center;
+        }
+        form {
+            margin: 20px 0;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>Excel Dönüştürücü</h1>
         <form action="/api/upload" method="post" enctype="multipart/form-data">
-            <div class="upload-area">
-                <input type="file" id="excelFile" name="excelFile" accept=".xlsx, .xls" required>
-                <label for="excelFile">Excel Dosyası Seç</label>
+            <div>
+                <input type="file" name="excelFile" accept=".xlsx, .xls" required>
             </div>
             <button type="submit">Dönüştür</button>
         </form>
-        <div id="result" style="display: none;">
-            <p>Dönüştürme işlemi başarılı!</p>
-            <a id="downloadLink" href="#" class="download-btn">Dönüştürülmüş Dosyayı İndir</a>
-        </div>
-        <div id="loading" style="display: none;">
-            Dönüştürülüyor...
-        </div>
     </div>
-    <script src="/js/script.js"></script>
 </body>
 </html> 

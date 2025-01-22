@@ -1,5 +1,6 @@
 const express = require('express');
 const multer = require('multer');
+const path = require('path');
 const transformExcel = require('./excel_transform');
 
 // Multer belleğe kaydetme konfigürasyonu
@@ -18,22 +19,24 @@ const upload = multer({
 
 const app = express();
 
+// View engine ayarları
+app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
-app.use(express.static('public'));
 
-// Hata yakalama middleware'i
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({
-        success: false,
-        message: 'Bir hata oluştu: ' + err.message
-    });
-});
+// Static dosyalar için
+app.use(express.static(path.join(__dirname, 'public')));
 
+// Ana sayfa
 app.get('/', (req, res) => {
-    res.render('index');
+    try {
+        res.render('index');
+    } catch (error) {
+        console.error('Render hatası:', error);
+        res.status(500).send('Bir hata oluştu: ' + error.message);
+    }
 });
 
+// Upload endpoint'i
 app.post('/api/upload', (req, res) => {
     upload(req, res, async function(err) {
         if (err instanceof multer.MulterError) {
@@ -72,5 +75,27 @@ app.post('/api/upload', (req, res) => {
     });
 });
 
-// Vercel için export
+// Hata yakalama middleware'i
+app.use((err, req, res, next) => {
+    console.error('Uygulama hatası:', err.stack);
+    res.status(500).json({
+        success: false,
+        message: 'Bir hata oluştu: ' + err.message
+    });
+});
+
+// 404 handler
+app.use((req, res) => {
+    res.status(404).send('Sayfa bulunamadı');
+});
+
+// Express uygulamasını export et
 module.exports = app;
+
+// Eğer doğrudan çalıştırılıyorsa (development)
+if (require.main === module) {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`Server ${PORT} portunda çalışıyor`);
+    });
+}
