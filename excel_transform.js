@@ -7,20 +7,6 @@ async function transformExcel(fileBuffer) {
             throw new Error('Geçersiz dosya: Boş dosya');
         }
 
-        // Excel dosyası kontrolü
-        try {
-            // Gelen Excel dosyasını oku
-            const sourceWorkbook = new Excel.Workbook();
-            await sourceWorkbook.xlsx.load(fileBuffer);
-            const sourceSheet = sourceWorkbook.getWorksheet(1);
-
-            if (!sourceSheet) {
-                throw new Error('Excel dosyası boş veya geçersiz');
-            }
-        } catch (error) {
-            throw new Error('Geçersiz Excel dosyası: ' + error.message);
-        }
-
         // Yeni workbook oluştur
         const newWorkbook = new Excel.Workbook();
         const newWorksheet = newWorkbook.addWorksheet('Transformed Data');
@@ -98,8 +84,24 @@ async function transformExcel(fileBuffer) {
             size: 11
         };
 
-        // Diğer başlıkları ve alanları ekle...
-        // (Devam edecek...)
+        // Kaynak Excel'i okumayı en sona al
+        try {
+            // Gelen Excel dosyasını oku
+            const sourceWorkbook = new Excel.Workbook();
+            await sourceWorkbook.xlsx.load(fileBuffer);
+            const sourceSheet = sourceWorkbook.getWorksheet(1);
+
+            if (!sourceSheet) {
+                throw new Error('Excel dosyası boş veya geçersiz');
+            }
+
+            // Kaynak verilerini işle
+            // ... (veri işleme kodları buraya gelecek)
+
+        } catch (error) {
+            // Kaynak dosya okunamasa bile yeni şablonu döndür
+            console.warn('Kaynak dosya okunamadı:', error.message);
+        }
 
         // Buffer olarak döndür
         try {

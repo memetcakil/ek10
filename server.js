@@ -59,8 +59,13 @@ app.post('/api/upload', (req, res) => {
         }
 
         // Dosya tipi kontrolü
-        if (!req.file.mimetype.includes('spreadsheet') && 
-            !req.file.mimetype.includes('excel')) {
+        const validMimeTypes = [
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-excel',
+            'application/octet-stream' // Bazı tarayıcılar bu MIME type'ı kullanabilir
+        ];
+        
+        if (!validMimeTypes.includes(req.file.mimetype)) {
             return res.status(400).json({
                 success: false,
                 message: 'Lütfen geçerli bir Excel dosyası seçin.'
