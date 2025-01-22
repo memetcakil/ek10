@@ -253,6 +253,38 @@ async function transformExcel(fileBuffer) {
             };
         }
 
+        // Modül adlarını topla
+        const moduleNames = new Set();
+        for (let i = 1; i < sourceData.length; i++) {
+            const row = sourceData[i];
+            if (row && row[1]) { // Modül adı varsa
+                moduleNames.add(row[1]);
+            }
+        }
+
+        // C10'dan başlayarak modül adlarını dikey yaz
+        let moduleIndex = 0;
+        for (const moduleName of moduleNames) {
+            if (moduleIndex >= 21) break; // Maksimum 21 modül
+
+            const col = String.fromCharCode(67 + moduleIndex); // C'den başla
+            const cell = newWorksheet.getCell(`${col}10`);
+            cell.value = moduleName;
+            cell.alignment = {
+                textRotation: 90, // Dikey yazı
+                vertical: 'middle',
+                horizontal: 'center'
+            };
+            cell.font = {
+                bold: true,
+                size: 11
+            };
+            moduleIndex++;
+        }
+
+        // Başlık satırı yüksekliğini ayarla
+        newWorksheet.getRow(10).height = 150;
+
         // Verileri işle
         try {
             let currentStudent = null;
