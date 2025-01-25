@@ -360,13 +360,14 @@ async function transformExcel(fileBuffer) {
             }
         }
 
-        // C10'dan başlayarak modül adlarını referans olarak ekle
-        for (let i = 0; i < 21; i++) {
-            const col = String.fromCharCode(67 + i); // C'den başla
+        // C10'dan başlayarak modül adlarını dikey yaz
+        let moduleIndex = 0;
+        for (const moduleName of moduleNames) {
+            if (moduleIndex >= 21) break; // Maksimum 21 modül
+
+            const col = String.fromCharCode(67 + moduleIndex); // C'den başla
             const cell = newWorksheet.getCell(`${col}10`);
-            cell.value = {
-                formula: `='EK 10 Sayfa 1'!${col}10`
-            };
+            cell.value = moduleName;
             cell.alignment = {
                 textRotation: 90, // Dikey yazı
                 vertical: 'middle',
@@ -376,6 +377,7 @@ async function transformExcel(fileBuffer) {
                 bold: true,
                 size: 11
             };
+            moduleIndex++;
         }
 
         // Başlık satırı yüksekliğini ayarla
