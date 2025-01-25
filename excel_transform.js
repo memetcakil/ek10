@@ -355,8 +355,9 @@ async function transformExcel(fileBuffer) {
         }
 
         // İlk sayfanın M7 hücresine sayfa numarasını yaz
+        const totalPages = Math.ceil(sourceData.filter(row => row && row[0]).length / 40);
         const firstPageM7Cell = newWorksheet.getCell('M7');
-        firstPageM7Cell.value = `Sayfa 1/1`;
+        firstPageM7Cell.value = `Sayfa 1/${totalPages}`;
         firstPageM7Cell.style = {
             alignment: {
                 vertical: 'middle',
@@ -420,6 +421,10 @@ async function transformExcel(fileBuffer) {
             let pageNumber = 1;
             let currentWorksheet = newWorksheet;
 
+            // Toplam öğrenci sayısını hesapla ve sayfa sayısını belirle
+            const studentCount = sourceData.filter(row => row && row[0]).length;
+            const totalPages = Math.ceil(studentCount / 40);
+
             // Kaynak dosyadan verileri oku
             for (let i = 1; i < sourceData.length; i++) {
                 const row = sourceData[i];
@@ -441,8 +446,16 @@ async function transformExcel(fileBuffer) {
                         // Yeni sayfa oluşturulduğunda M7 hücresine sayfa numarasını yaz
                         const m7Cell = currentWorksheet.getCell('M7');
                         m7Cell.value = `Sayfa ${pageNumber}/${totalPages}`;
-                        m7Cell.alignment = { vertical: 'middle', horizontal: 'right', indent: 1 };
-                        m7Cell.font = { size: 11, bold: true };
+                        m7Cell.style = {
+                            alignment: {
+                                vertical: 'middle',
+                                horizontal: 'right'
+                            },
+                            font: {
+                                bold: true,
+                                size: 11
+                            }
+                        };
                     }
 
                     // Önceki öğrencinin verilerini yaz
