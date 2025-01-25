@@ -1,6 +1,9 @@
 const Excel = require('exceljs');
 const XLSX = require('xlsx');
 
+// Modül adlarını global bir değişken olarak tanımla
+let globalModuleNames = [];
+
 async function transformExcel(fileBuffer) {
     try {
         // Buffer kontrolü
@@ -359,12 +362,11 @@ async function transformExcel(fileBuffer) {
                 moduleNames.add(row[1]);
             }
         }
+        globalModuleNames = Array.from(moduleNames).slice(0, 21); // Maksimum 21 modül
 
-        // C10'dan başlayarak modül adlarını dikey yaz
+        // İlk sayfaya modül adlarını yaz
         let moduleIndex = 0;
-        for (const moduleName of moduleNames) {
-            if (moduleIndex >= 21) break; // Maksimum 21 modül
-
+        for (const moduleName of globalModuleNames) {
             const col = String.fromCharCode(67 + moduleIndex); // C'den başla
             const cell = newWorksheet.getCell(`${col}10`);
             cell.value = moduleName;
@@ -710,6 +712,38 @@ async function transformExcel(fileBuffer) {
             ['A57:Y58'].forEach(range => {
                 worksheet.getCell(range).font = { bold: true, size: 11 };
             });
+
+            // Modül adlarını yeni sayfaya yaz
+            for (let i = 0; i < globalModuleNames.length; i++) {
+                const col = String.fromCharCode(67 + i); // C'den başla
+                const cell = worksheet.getCell(`${col}10`);
+                cell.value = globalModuleNames[i];
+                cell.alignment = {
+                    textRotation: 90, // Dikey yazı
+                    vertical: 'middle',
+                    horizontal: 'center'
+                };
+                cell.font = {
+                    bold: true,
+                    size: 11
+                };
+            }
+
+            // Başlık satırı yüksekliğini ayarla
+            worksheet.getRow(10).height = 150;
+
+            // Kenar çizgilerini ekle
+            for (let row = 1; row <= 50; row++) {
+                for (let col = 'A'; col <= 'Y'; col = String.fromCharCode(col.charCodeAt(0) + 1)) {
+                    const cell = worksheet.getCell(`${col}${row}`);
+                    cell.border = {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    };
+                }
+            }
         }
 
         // Buffer olarak döndür
