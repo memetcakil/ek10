@@ -360,7 +360,7 @@ async function transformExcel(fileBuffer) {
             }
         }
 
-        // C10'dan başlayarak modül adlarını ilk sayfadan referansla yaz
+        // C10'dan başlayarak modül adlarını referans olarak ekle
         for (let i = 0; i < 21; i++) {
             const col = String.fromCharCode(67 + i); // C'den başla
             const cell = newWorksheet.getCell(`${col}10`);
