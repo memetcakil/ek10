@@ -418,7 +418,8 @@ async function transformExcel(fileBuffer) {
                         // Notları yaz
                         studentGrades.forEach((grade, moduleIndex) => {
                             const col = String.fromCharCode(67 + moduleIndex);
-                            wsRow.getCell(col).value = grade;
+                            // -1 değerini "M" olarak değiştir
+                            wsRow.getCell(col).value = grade === -1 ? "M" : grade;
                         });
 
                         rowIndex++;
@@ -433,7 +434,9 @@ async function transformExcel(fileBuffer) {
                 if (row[1] && row[3]) {
                     const moduleIndex = Array.from(studentGrades.keys()).length;
                     if (moduleIndex < 21) {
-                        studentGrades.set(moduleIndex, row[3]);
+                        // Not değerini kontrol et
+                        const grade = row[3];
+                        studentGrades.set(moduleIndex, grade);
                     }
                 }
             }
@@ -446,7 +449,8 @@ async function transformExcel(fileBuffer) {
 
                 studentGrades.forEach((grade, moduleIndex) => {
                     const col = String.fromCharCode(67 + moduleIndex);
-                    wsRow.getCell(col).value = grade;
+                    // -1 değerini "M" olarak değiştir
+                    wsRow.getCell(col).value = grade === -1 ? "M" : grade;
                 });
             }
 
