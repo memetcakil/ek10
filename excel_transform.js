@@ -17,7 +17,7 @@ async function transformExcel(fileBuffer) {
 
         // Yeni workbook oluştur
         const newWorkbook = new Excel.Workbook();
-        const newWorksheet = newWorkbook.addWorksheet('Transformed Data');
+        const newWorksheet = newWorkbook.addWorksheet('EK 10 Sayfa 1');
 
         // Sütun genişliklerini ayarla
         newWorksheet.columns = [
@@ -416,8 +416,8 @@ async function transformExcel(fileBuffer) {
                         pageNumber++;
                         rowIndex = 11; // Yeni sayfada tekrar 11'den başla
                         
-                        // Yeni worksheet oluştur
-                        currentWorksheet = newWorkbook.addWorksheet(`Sayfa ${pageNumber}`);
+                        // Yeni worksheet oluştur (sayfa ismini güncelle)
+                        currentWorksheet = newWorkbook.addWorksheet(`EK 10 Sayfa ${pageNumber}`);
                         
                         // Yeni sayfanın formatlamasını yap
                         setupNewWorksheet(currentWorksheet);
