@@ -357,8 +357,16 @@ async function transformExcel(fileBuffer) {
         // İlk sayfanın M7 hücresine sayfa numarasını yaz
         const firstPageM7Cell = newWorksheet.getCell('M7');
         firstPageM7Cell.value = `Sayfa 1/1`;
-        firstPageM7Cell.alignment = { vertical: 'middle', horizontal: 'right', indent: 1 };
-        firstPageM7Cell.font = { size: 11, bold: true };
+        firstPageM7Cell.style = {
+            alignment: {
+                vertical: 'middle',
+                horizontal: 'right'
+            },
+            font: {
+                bold: true,
+                size: 11
+            }
+        };
 
         // Modül adlarını topla
         const moduleNames = new Set();
