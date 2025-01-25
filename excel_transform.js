@@ -406,6 +406,16 @@ async function transformExcel(fileBuffer) {
             let pageNumber = 1;
             let currentWorksheet = newWorksheet;
 
+            // Toplam sayfa sayısını hesapla
+            const totalStudents = sourceData.filter(row => row && row[0]).length;
+            const totalPages = Math.ceil(totalStudents / 40);
+
+            // İlk sayfanın M7 hücresine sayfa numarasını yaz
+            const firstPageM7Cell = newWorksheet.getCell('M7');
+            firstPageM7Cell.value = `Sayfa ${pageNumber}/${totalPages}`;
+            firstPageM7Cell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+            firstPageM7Cell.font = { size: 11 };
+
             // Kaynak dosyadan verileri oku
             for (let i = 1; i < sourceData.length; i++) {
                 const row = sourceData[i];
@@ -416,13 +426,17 @@ async function transformExcel(fileBuffer) {
                     // Eğer 40 öğrenci olduysa yeni sayfa oluştur
                     if (rowIndex > 50) {
                         pageNumber++;
-                        rowIndex = 11; // Yeni sayfada tekrar 11'den başla
+                        rowIndex = 11;
                         
-                        // Yeni worksheet oluştur (sayfa ismini güncelle)
                         currentWorksheet = newWorkbook.addWorksheet(`EK 10 Sayfa ${pageNumber}`);
                         
-                        // Yeni sayfanın formatlamasını yap
                         setupNewWorksheet(currentWorksheet);
+                        
+                        // Yeni sayfanın M7 hücresine sayfa numarasını yaz
+                        const m7Cell = currentWorksheet.getCell('M7');
+                        m7Cell.value = `Sayfa ${pageNumber}/${totalPages}`;
+                        m7Cell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+                        m7Cell.font = { size: 11 };
                     }
 
                     // Önceki öğrencinin verilerini yaz
