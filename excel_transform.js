@@ -15,6 +15,15 @@ async function transformExcel(fileBuffer) {
         const sourceData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
         console.log('XLSX ile veri okundu:', sourceData.length, 'satır');
 
+        // Modül adlarını topla (ilk okuma sırasında)
+        const moduleNames = new Set();
+        for (let i = 1; i < sourceData.length; i++) {
+            const row = sourceData[i];
+            if (row && row[1]) { // Modül adı varsa
+                moduleNames.add(row[1]);
+            }
+        }
+
         // Yeni workbook oluştur
         const newWorkbook = new Excel.Workbook();
         const newWorksheet = newWorkbook.addWorksheet('EK 10 Sayfa 1');
