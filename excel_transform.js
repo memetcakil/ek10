@@ -429,7 +429,7 @@ async function transformExcel(fileBuffer) {
                         currentWorksheet = newWorkbook.addWorksheet(`EK 10 Sayfa ${pageNumber}`);
                         
                         // Yeni sayfanın formatlamasını yap
-                        setupNewWorksheet(currentWorksheet);
+                        setupNewWorksheet(currentWorksheet, moduleNames);
                     }
 
                     // Önceki öğrencinin verilerini yaz
@@ -480,7 +480,7 @@ async function transformExcel(fileBuffer) {
         }
 
         // Yeni worksheet kurulum fonksiyonu
-        function setupNewWorksheet(worksheet) {
+        function setupNewWorksheet(worksheet, moduleNames) {
             // Sütun genişliklerini ayarla
             worksheet.columns = [
                 { header: '', width: 5 },  // A sütunu
@@ -719,6 +719,29 @@ async function transformExcel(fileBuffer) {
             ['A57:Y58'].forEach(range => {
                 worksheet.getCell(range).font = { bold: true, size: 11 };
             });
+
+            // Modül adlarını C10'dan başlayarak dikey yaz
+            let moduleIndex = 0;
+            for (const moduleName of moduleNames) {
+                if (moduleIndex >= 21) break; // Maksimum 21 modül
+
+                const col = String.fromCharCode(67 + moduleIndex); // C'den başla
+                const cell = worksheet.getCell(`${col}10`);
+                cell.value = moduleName;
+                cell.alignment = {
+                    textRotation: 90, // Dikey yazı
+                    vertical: 'middle',
+                    horizontal: 'center'
+                };
+                cell.font = {
+                    bold: true,
+                    size: 11
+                };
+                moduleIndex++;
+            }
+
+            // Başlık satırı yüksekliğini ayarla
+            worksheet.getRow(10).height = 150;
         }
 
         // Buffer olarak döndür
