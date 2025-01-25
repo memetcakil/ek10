@@ -39,34 +39,40 @@ app.get('/', (req, res) => {
 // Upload endpoint'i
 app.post('/api/upload', (req, res) => {
     upload(req, res, async function(err) {
+        if (err instanceof multer.MulterError) {
+            return res.status(400).json({
+                success: false,
+                message: 'Dosya yükleme hatası: ' + err.message
+            });
+        } else if (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message
+            });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'Lütfen bir dosya seçin.'
+            });
+        }
+
+        // Dosya tipi kontrolü
+        const validMimeTypes = [
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-excel',
+            'application/octet-stream' // Bazı tarayıcılar bu MIME type'ı kullanabilir
+        ];
+        
+        if (!validMimeTypes.includes(req.file.mimetype)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Lütfen geçerli bir Excel dosyası seçin.'
+            });
+        }
+
         try {
-            if (err instanceof multer.MulterError) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Dosya yükleme hatası: ' + err.message
-                });
-            } else if (err) {
-                return res.status(400).json({
-                    success: false,
-                    message: err.message
-                });
-            }
-
-            if (!req.file) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Lütfen bir dosya seçin.'
-                });
-            }
-
-            // Dosya boyutu kontrolü
-            if (req.file.size > 5 * 1024 * 1024) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Dosya boyutu 5MB\'dan büyük olamaz.'
-                });
-            }
-
             const excelBuffer = await transformExcel(req.file.buffer);
             
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -75,9 +81,9 @@ app.post('/api/upload', (req, res) => {
 
         } catch (error) {
             console.error('Dönüştürme hatası:', error);
-            return res.status(500).json({
+            return res.status(400).json({
                 success: false,
-                message: 'Sunucu hatası: ' + error.message
+                message: error.message
             });
         }
     });

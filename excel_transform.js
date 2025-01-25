@@ -15,15 +15,6 @@ async function transformExcel(fileBuffer) {
         const sourceData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
         console.log('XLSX ile veri okundu:', sourceData.length, 'satır');
 
-        // Modül adlarını topla (ilk okuma sırasında)
-        const moduleNames = new Set();
-        for (let i = 1; i < sourceData.length; i++) {
-            const row = sourceData[i];
-            if (row && row[1]) { // Modül adı varsa
-                moduleNames.add(row[1]);
-            }
-        }
-
         // Yeni workbook oluştur
         const newWorkbook = new Excel.Workbook();
         const newWorksheet = newWorkbook.addWorksheet('EK 10 Sayfa 1');
@@ -429,7 +420,7 @@ async function transformExcel(fileBuffer) {
                         currentWorksheet = newWorkbook.addWorksheet(`EK 10 Sayfa ${pageNumber}`);
                         
                         // Yeni sayfanın formatlamasını yap
-                        setupNewWorksheet(currentWorksheet, moduleNames);
+                        setupNewWorksheet(currentWorksheet);
                     }
 
                     // Önceki öğrencinin verilerini yaz
@@ -480,7 +471,7 @@ async function transformExcel(fileBuffer) {
         }
 
         // Yeni worksheet kurulum fonksiyonu
-        function setupNewWorksheet(worksheet, moduleNames) {
+        function setupNewWorksheet(worksheet) {
             // Sütun genişliklerini ayarla
             worksheet.columns = [
                 { header: '', width: 5 },  // A sütunu
@@ -719,29 +710,6 @@ async function transformExcel(fileBuffer) {
             ['A57:Y58'].forEach(range => {
                 worksheet.getCell(range).font = { bold: true, size: 11 };
             });
-
-            // Modül adlarını C10'dan başlayarak dikey yaz
-            let moduleIndex = 0;
-            for (const moduleName of moduleNames) {
-                if (moduleIndex >= 21) break; // Maksimum 21 modül
-
-                const col = String.fromCharCode(67 + moduleIndex); // C'den başla
-                const cell = worksheet.getCell(`${col}10`);
-                cell.value = moduleName;
-                cell.alignment = {
-                    textRotation: 90, // Dikey yazı
-                    vertical: 'middle',
-                    horizontal: 'center'
-                };
-                cell.font = {
-                    bold: true,
-                    size: 11
-                };
-                moduleIndex++;
-            }
-
-            // Başlık satırı yüksekliğini ayarla
-            worksheet.getRow(10).height = 150;
         }
 
         // Buffer olarak döndür
